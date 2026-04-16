@@ -118,42 +118,6 @@ function extractJson(raw: string) {
   }
 }
 
-  // Son geçerli } bulup kes
-  const end = clean.lastIndexOf("}");
-  if (end !== -1) clean = clean.slice(0, end + 1);
-
-  clean = clean
-    .replace(/,\s*}/g, "}")
-    .replace(/,\s*]/g, "]")
-    .replace(/[\u0000-\u001F\u007F-\u009F]/g, " ");
-
-  try { return JSON.parse(clean); } catch {}
-  
-  try { return JSON.parse(fix(clean)); } catch(e) {
-    throw new Error("JSON parse hatası: " + String(e).slice(0, 80));
-  }
-}  
-  // Süslü parantez başlangıcını bul
-  const start = clean.indexOf("{");
-  if (start > 0) clean = clean.slice(start);
-  
-  // Son süslü parantezi bul
-  const end = clean.lastIndexOf("}");
-  if (end !== -1) clean = clean.slice(0, end + 1);
-  
-  try { return JSON.parse(clean); } catch {}
-  
-  // Kaçan karakterleri temizle
-  clean = clean
-    .replace(/[\u0000-\u001F\u007F-\u009F]/g, " ")
-    .replace(/,\s*}/g, "}")
-    .replace(/,\s*]/g, "]");
-  
-  try { return JSON.parse(clean); } catch(e) {
-    throw new Error("JSON parse hatası: " + String(e).slice(0, 80));
-  }
-}
-
 // ── CSS ────────────────────────────────────────────────────────
 const css = `
   @keyframes spin{to{transform:rotate(360deg)}}
