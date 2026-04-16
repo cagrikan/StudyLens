@@ -488,6 +488,9 @@ const analyzeImage = async (cropPct: any) => {
       const compressed = await compressDataUrl(croppedDataUrl);
       let sendB64: string, thumbnail: string;
       if (compressed) { sendB64 = compressed.b64; thumbnail = compressed.dataUrl; }
+      // Thumbnail'i daha da küçült
+      const thumbCompressed = await compressDataUrl(thumbnail, 500_000);
+      if (thumbCompressed) thumbnail = thumbCompressed.dataUrl;
       else { sendB64 = croppedDataUrl.split(",")[1] || ""; thumbnail = croppedDataUrl; if (sendB64.length > 4_800_000) { setErr("Fotoğraf çok büyük."); setLoading(false); return; } }
 raw = await callClaude([{ role: "user", content: [{ type: "image", source: { type: "base64", media_type: "image/jpeg", data: sendB64 } }, { type: "text", text: `Analyze ALL educational questions visible in this image. Return ONLY valid JSON, start with { end with }, no backticks: {"questions":[{"subject":"Matematik","topic":"topic in Turkish","subtopic":"subtopic in Turkish","difficulty":"Kolay or Orta or Zor","question":"full question text in Turkish","summary":"one sentence in Turkish","answer":"Adım adım çözüm: 1) ... 2) ... şeklinde detaylı açıkla, sonunda cevabı belirt","advice":"one sentence in Turkish"}]}` }] }], 8000);      
       const parsed = extractJson(raw);
