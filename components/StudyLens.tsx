@@ -337,8 +337,16 @@ function QuestionDetail({ q, onClose }: { q: any; onClose: () => void }) {
         </div>
         <div style={{ margin: "12px 16px 0", padding: "14px 16px", background: SURFACE, borderRadius: 16, border: `1px solid ${BORDER}` }}>
           <div style={{ fontSize: 11, fontWeight: 700, color: MUTED, marginBottom: 6, textTransform: "uppercase", letterSpacing: .8 }}>Soru</div>
-            <div style={{ fontSize: 14, color: TEXT, lineHeight: 1.7 }}>{a.question || a.summary}</div>
-            <div style={{ fontSize: 12, color: MUTED, marginTop: 8, lineHeight: 1.6 }}>{a.summary}</div>
+          {a.question && (
+          <div style={{ margin: "12px 16px 0", padding: "14px 16px", background: SURFACE, borderRadius: 16, border: `1px solid ${BORDER}` }}>
+          <div style={{ fontSize: 11, fontWeight: 700, color: MUTED, marginBottom: 6, textTransform: "uppercase", letterSpacing: .8 }}>Soru Metni</div>
+          <div style={{ fontSize: 14, color: TEXT, lineHeight: 1.7 }}>{a.question}</div>
+  </div>
+)}
+<div style={{ margin: "10px 16px 0", padding: "14px 16px", background: SURFACE, borderRadius: 16, border: `1px solid ${BORDER}` }}>
+  <div style={{ fontSize: 11, fontWeight: 700, color: MUTED, marginBottom: 6, textTransform: "uppercase", letterSpacing: .8 }}>Özet</div>
+  <div style={{ fontSize: 14, color: TEXT, lineHeight: 1.7 }}>{a.summary}</div>
+</div>
         </div>
         <div style={{ margin: "10px 16px 0", padding: "14px 16px", background: "rgba(108,99,255,0.1)", borderRadius: 16, borderLeft: `3px solid ${P}` }}>
           <div style={{ fontSize: 11, fontWeight: 700, color: P2, marginBottom: 6, textTransform: "uppercase", letterSpacing: .8 }}>Nasıl Çalışmalısın?</div>
