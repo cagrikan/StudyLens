@@ -657,8 +657,10 @@ const buildTest = async () => {
       {total > 0 && (
         <button onClick={() => { setSelectMode(!selectMode); setSelected(new Set()); }}
           style={{ background: selectMode ? "rgba(255,101,132,0.1)" : "rgba(108,99,255,0.1)", border: `1px solid ${selectMode ? "rgba(255,101,132,0.3)" : "rgba(108,99,255,0.3)"}`, borderRadius: 10, padding: "6px 14px", color: selectMode ? "#FF8FA5" : P2, fontSize: 12, fontWeight: 700, cursor: "pointer" }}>
-          {selectMode ? "İptal" : "Seç"}
-        </button>
+{selectMode
+  ? <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M18 6L6 18M6 6l12 12" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/></svg>
+  : <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>
+}        </button>
       )}
     </div>
 
