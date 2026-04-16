@@ -490,10 +490,19 @@ raw = await callClaude([{ role: "user", content: [{ type: "image", source: { typ
       const analyses = (parsed.questions || [parsed]).filter((a: any) => a?.topic);
       if (!analyses.length) throw new Error("Soru tespit edilemedi");
       const time = new Date().toLocaleTimeString("tr-TR", { hour: "2-digit", minute: "2-digit" });
-      const newQs = await Promise.all(analyses.map(async (a: any, i: number) => {
-      let qUrl = thumbnail;
+const newQs = await Promise.all(analyses.map(async (a: any, i: number) => {
+  let qUrl = thumbnail;
   if (a.bbox) {
-    try { qUrl = await cropImage(croppedDataUrl, { top: a.bbox.top, left: a.bbox.left, bottom: a.bbox.bottom, right: a.bbox.right }); } catch {}
+    try { 
+      qUrl = await cropImage(croppedDataUrl, { 
+        top: a.bbox.top, 
+        left: a.bbox.left, 
+        bottom: a.bbox.bottom, 
+        right: a.bbox.right 
+      }); 
+    } catch(err) { 
+      console.error("bbox crop hatası:", err); 
+    }
   }
   return { id: Date.now() + i, url: qUrl, analysis: a, time };
 }));
