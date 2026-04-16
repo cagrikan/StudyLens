@@ -483,8 +483,7 @@ async function cropImage(dataUrl: string, cropPct: { left: number; top: number; 
       const analyses = (parsed.questions || [parsed]).filter((a: any) => a?.topic);
       if (!analyses.length) throw new Error("Soru tespit edilemedi");
       const time = new Date().toLocaleTimeString("tr-TR", { hour: "2-digit", minute: "2-digit" });
-      const newQs = analyses.map((a: any, i: number) => ({ id: Date.now() + i, url: thumbnail, analysis: a, time }));
-      const updated = [...qs, ...newQs]; setQs(updated);
+      const newQs = analyses.map((a: any, i: number) => ({ id: Date.now() + i, url: thumbnail, analysis: a, time }));      const updated = [...qs, ...newQs]; setQs(updated);
       if (currentUser) { for (const q of newQs) await sSet(`qimg:${currentUser}:${q.id}`, thumbnail || ""); await saveQs(currentUser, updated); }
       if (updated.length % CYCLE === 0) buildReport(updated.slice(-CYCLE), true);
     } catch (e: any) { setErr("Hata: " + (e.message || String(e))); }
