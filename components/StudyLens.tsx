@@ -344,8 +344,7 @@ function QuestionDetail({ q, onClose }: { q: any; onClose: () => void }) {
    <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.8)", zIndex: 200, display: "flex", alignItems: "flex-end", justifyContent: "center", backdropFilter: "blur(8px)" }} onClick={onClose}>
   <div onClick={e => e.stopPropagation()} style={{ background: CARD, border: `1px solid ${BORDER}`, borderRadius: "28px 28px 0 0", width: "100%", maxWidth: 420, maxHeight: "90vh", overflowY: "auto", paddingBottom: 32 }}>
     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "16px 16px 0" }}>
-      <div style={{ fontSize: 16, fontWeight: 700, color: TEXT }}>Soru Detayı</div>
-      <button onClick={onClose} style={{ background: "rgba(255,255,255,0.08)", border: `1px solid ${BORDER}`, borderRadius: 12, width: 34, height: 34, color: TEXT, cursor: "pointer", fontSize: 20, display: "flex", alignItems: "center", justifyContent: "center" }}>×</button>
+<div onClick={onClose} style={{ fontSize: 16, fontWeight: 700, color: TEXT, cursor: "pointer" }}>Soru Detayı ↓</div>          <button onClick={onClose} style={{ background: "rgba(255,255,255,0.08)", border: `1px solid ${BORDER}`, borderRadius: 12, width: 34, height: 34, color: TEXT, cursor: "pointer", fontSize: 20, display: "flex", alignItems: "center", justifyContent: "center" }}>×</button>
     </div>
     {q.url && <div style={{ margin: "8px 16px 0", borderRadius: 18, overflow: "hidden", background: "#000", display: "flex", justifyContent: "center" }}><img src={q.url} alt="" style={{ maxWidth: "100%", maxHeight: 260, objectFit: "contain" }} /></div>}
     <div style={{ display: "flex", gap: 8, padding: "14px 16px 0", flexWrap: "wrap", alignItems: "center" }}>
