@@ -486,12 +486,18 @@ const analyzeImage = async (cropPct: any) => {
       let sendB64: string, thumbnail: string;
       if (compressed) { sendB64 = compressed.b64; thumbnail = compressed.dataUrl; }
       else { sendB64 = croppedDataUrl.split(",")[1] || ""; thumbnail = croppedDataUrl; if (sendB64.length > 4_800_000) { setErr("Fotoğraf çok büyük."); setLoading(false); return; } }
-      raw = await callClaude([{ role: "user", content: [{ type: "image", source: { type: "base64", media_type: "image/jpeg", data: sendB64 } }, { type: "text", text: `Analyze ALL educational questions visible in this image. You MUST return complete valid JSON only. Do not truncate. Return ONLY this JSON structure with no extra text: {"questions":[{"subject":"Matematik","topic":"topic in Turkish","subtopic":"subtopic in Turkish","difficulty":"Kolay or Orta or Zor","question":"full question text in Turkish","summary":"brief summary in Turkish","answer":"short answer only in Turkish","advice":"study advice in Turkish"}]}` }] }], 4000);
+raw = await callClaude([{ role: "user", content: [{ type: "image", source: { type: "base64", media_type: "image/jpeg", data: sendB64 } }, { type: "text", text: `Analyze ALL educational questions visible in this image. For each question estimate its bounding box as percentage of image dimensions. Return ONLY this JSON: {"questions":[{"subject":"Matematik","topic":"topic in Turkish","subtopic":"subtopic in Turkish","difficulty":"Kolay or Orta or Zor","question":"full question text in Turkish","summary":"brief summary in Turkish","answer":"short answer only in Turkish","advice":"study advice in Turkish","bbox":{"top":0,"left":0,"bottom":50,"right":50}}]}` }] }], 4000);
       const parsed = extractJson(raw);
       const analyses = (parsed.questions || [parsed]).filter((a: any) => a?.topic);
       if (!analyses.length) throw new Error("Soru tespit edilemedi");
       const time = new Date().toLocaleTimeString("tr-TR", { hour: "2-digit", minute: "2-digit" });
-      const newQs = analyses.map((a: any, i: number) => ({ id: Date.now() + i, url: thumbnail, analysis: a, time }));
+      const newQs = await Promise.all(analyses.map(async (a: any, i: number) => {
+      let qUrl = thumbnail;
+  if (a.bbox) {
+    try { qUrl = await cropImage(croppedDataUrl, { top: a.bbox.top, left: a.bbox.left, bottom: a.bbox.bottom, right: a.bbox.right }); } catch {}
+  }
+  return { id: Date.now() + i, url: qUrl, analysis: a, time };
+}));
       const updated = [...qs, ...newQs]; setQs(updated);
       if (currentUser) { for (const q of newQs) await sSet(`qimg:${currentUser}:${q.id}`, thumbnail || ""); await saveQs(currentUser, updated); }
       if (updated.length % CYCLE === 0) buildReport(updated.slice(-CYCLE), true);
