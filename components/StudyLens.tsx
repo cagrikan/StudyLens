@@ -99,11 +99,27 @@ async function compressDataUrl(srcDataUrl: string, maxB64 = 4_800_000) {
 }
 
 function extractJson(raw: string) {
-  const clean = raw.replace(/```json|```/g, "").trim();
+  let clean = raw.replace(/```json|```/g, "").trim();
+  
+  // Süslü parantez başlangıcını bul
+  const start = clean.indexOf("{");
+  if (start > 0) clean = clean.slice(start);
+  
+  // Son süslü parantezi bul
+  const end = clean.lastIndexOf("}");
+  if (end !== -1) clean = clean.slice(0, end + 1);
+  
   try { return JSON.parse(clean); } catch {}
-  const m = clean.match(/\{[\s\S]*\}/);
-  if (m) return JSON.parse(m[0]);
-  throw new Error("JSON yok: " + raw.slice(0, 60));
+  
+  // Kaçan karakterleri temizle
+  clean = clean
+    .replace(/[\u0000-\u001F\u007F-\u009F]/g, " ")
+    .replace(/,\s*}/g, "}")
+    .replace(/,\s*]/g, "]");
+  
+  try { return JSON.parse(clean); } catch(e) {
+    throw new Error("JSON parse hatası: " + String(e).slice(0, 80));
+  }
 }
 
 // ── CSS ────────────────────────────────────────────────────────
