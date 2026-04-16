@@ -450,7 +450,7 @@ export default function App() {
 
 const buildTest = async () => {
     const data = qs.slice(-Math.min(total, CYCLE));
-    setGenTest(true); setAnswers({}); setSubmitted(false); setTestErr("");
+    setGenTest(true); setAnswers({}); setSubmitted(false);
     try {
       const list = data.map((q, i) => `${i + 1}. ${q.analysis.subject} - ${q.analysis.topic} - ${q.analysis.subtopic}`).join("\n");
       const raw = await callClaude([{ role: "user", content: `Student weak topics:\n${list}\n\nCreate 5 multiple-choice questions in Turkish. Return ONLY a raw JSON object, no markdown, no backticks:\n{"qs":[{"subject":"...","topic":"...","q":"question?","opts":{"A":"...","B":"...","C":"...","D":"..."},"ans":"A","exp":"explanation"}]}` }], 2000);
