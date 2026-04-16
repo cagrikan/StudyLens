@@ -1,6 +1,5 @@
 "use client";
-import { useState, useRef } from "react";
-
+import { useState, useRef, useEffect } from "react";
 const MODEL = "claude-haiku-4-5";
 const CYCLE = 10;
 const MIN_ACTION = 3;
