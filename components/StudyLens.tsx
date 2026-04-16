@@ -373,7 +373,7 @@ function QuestionDetail({ q, onClose }: { q: any; onClose: () => void }) {
 </div>
 <button onClick={() => setShowAnswer(!showAnswer)}
   style={{ display: "block", margin: "10px 16px 0", width: "calc(100% - 32px)", background: showAnswer ? "rgba(255,101,132,0.1)" : "rgba(52,211,153,0.1)", border: `1px solid ${showAnswer ? "rgba(255,101,132,0.3)" : "rgba(52,211,153,0.3)"}`, borderRadius: 16, padding: 14, color: showAnswer ? "#FF8FA5" : "#4EEDB3", fontSize: 14, fontWeight: 700, cursor: "pointer" }}>
-  {showAnswer ? "Cevabı Gizle" : "Cevabı Gör"}
+  {showAnswer ? "Gizle" : "Çözüm Yolu"}
 </button>
 {showAnswer && a.answer && (
   <div style={{ margin: "10px 16px 0", padding: "14px 16px", background: "rgba(52,211,153,0.08)", borderRadius: 16, borderLeft: "3px solid #34D399" }}>
@@ -496,7 +496,7 @@ const analyzeImage = async (cropPct: any) => {
         thumbnail = croppedDataUrl;
         if (sendB64.length > 4_800_000) { setErr("Fotoğraf çok büyük."); setLoading(false); return; }
       }
-      raw = await callClaude([{ role: "user", content: [{ type: "image", source: { type: "base64", media_type: "image/jpeg", data: sendB64 } }, { type: "text", text: `Analyze ALL educational questions visible in this image. Return ONLY valid JSON, start with { end with }, no backticks: {"questions":[{"subject":"Matematik","topic":"topic in Turkish","subtopic":"subtopic in Turkish","difficulty":"Kolay or Orta or Zor","question":"full question text in Turkish","summary":"one sentence in Turkish","answer":"Adım adım çözüm: 1) ... 2) ... şeklinde detaylı açıkla, sonunda cevabı belirt","advice":"one sentence in Turkish"}]}` }] }], 8000);
+      raw = await callClaude([{ role: "user", content: [{ type: "image", source: { type: "base64", media_type: "image/jpeg", data: sendB64 } }, { type: "text", text: `Analyze ALL educational questions visible in this image. Return ONLY valid JSON, start with { end with }, no backticks: {"questions":[{"subject":"Matematik","topic":"topic in Turkish","subtopic":"subtopic in Turkish","difficulty":"Kolay or Orta or Zor","question":"full question text in Turkish","summary":"one sentence in Turkish","answer":"Bu sorunun çözüm yöntemini adım adım açıkla. Şekil veya grafik gerektiriyorsa hangi özelliklere bakılması gerektiğini söyle. Kesin sayısal cevap verme, yöntemi anlat.","advice":"one sentence in Turkish"}]}` }] }], 8000);
       const parsed = extractJson(raw);
       const analyses = (parsed.questions || [parsed]).filter((a: any) => a?.topic);
       if (!analyses.length) throw new Error("Soru tespit edilemedi");
