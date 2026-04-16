@@ -100,6 +100,36 @@ async function compressDataUrl(srcDataUrl: string, maxB64 = 4_800_000) {
 function extractJson(raw: string) {
   let clean = raw.replace(/```json|```/g, "").trim();
   
+  const start = clean.indexOf("{");
+  if (start > 0) clean = clean.slice(start);
+  
+  // Açık parantezleri say ve eksik kapatanları ekle
+  const fix = (s: string) => {
+    let out = s;
+    const opens = (out.match(/\[/g) || []).length;
+    const closes = (out.match(/\]/g) || []).length;
+    const opensBrace = (out.match(/\{/g) || []).length;
+    const closesBrace = (out.match(/\}/g) || []).length;
+    for (let i = 0; i < opens - closes; i++) out += "]";
+    for (let i = 0; i < opensBrace - closesBrace; i++) out += "}";
+    return out;
+  };
+
+  // Son geçerli } bulup kes
+  const end = clean.lastIndexOf("}");
+  if (end !== -1) clean = clean.slice(0, end + 1);
+
+  clean = clean
+    .replace(/,\s*}/g, "}")
+    .replace(/,\s*]/g, "]")
+    .replace(/[\u0000-\u001F\u007F-\u009F]/g, " ");
+
+  try { return JSON.parse(clean); } catch {}
+  
+  try { return JSON.parse(fix(clean)); } catch(e) {
+    throw new Error("JSON parse hatası: " + String(e).slice(0, 80));
+  }
+}  
   // Süslü parantez başlangıcını bul
   const start = clean.indexOf("{");
   if (start > 0) clean = clean.slice(start);
