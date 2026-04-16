@@ -378,7 +378,13 @@ function QuestionDetail({ q, onClose }: { q: any; onClose: () => void }) {
 {showAnswer && a.answer && (
   <div style={{ margin: "10px 16px 0", padding: "14px 16px", background: "rgba(52,211,153,0.08)", borderRadius: 16, borderLeft: "3px solid #34D399" }}>
     <div style={{ fontSize: 11, fontWeight: 700, color: "#4EEDB3", marginBottom: 6, textTransform: "uppercase", letterSpacing: .8 }}>Çözüm & Cevap</div>
-    <div style={{ fontSize: 14, color: "#4EEDB3", lineHeight: 1.7 }}>{a.answer}</div>
+<div style={{ fontSize: 14, color: "#4EEDB3", lineHeight: 1.9 }}>
+  {a.answer.split(/(?:Adım \d+:|^\d+[\.\)])/m).filter(Boolean).map((step: string, i: number) => (
+    <div key={i} style={{ marginBottom: 12, paddingBottom: 12, borderBottom: i < a.answer.split(/(?:Adım \d+:|^\d+[\.\)])/m).filter(Boolean).length - 1 ? "1px solid rgba(52,211,153,0.15)" : "none" }}>
+      {step.trim()}
+    </div>
+  ))}
+</div>
   </div>
 )}
 <button onClick={onClose} style={{ display: "block", margin: "16px 16px 0", width: "calc(100% - 32px)", background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 16, padding: 14, color: TEXT, fontSize: 15, fontWeight: 600, cursor: "pointer" }}>Kapat</button>
