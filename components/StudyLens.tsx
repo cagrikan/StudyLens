@@ -486,7 +486,7 @@ const analyzeImage = async (cropPct: any) => {
       let sendB64: string, thumbnail: string;
       if (compressed) { sendB64 = compressed.b64; thumbnail = compressed.dataUrl; }
       else { sendB64 = croppedDataUrl.split(",")[1] || ""; thumbnail = croppedDataUrl; if (sendB64.length > 4_800_000) { setErr("Fotoğraf çok büyük."); setLoading(false); return; } }
-raw = await callClaude([{ role: "user", content: [{ type: "image", source: { type: "base64", media_type: "image/jpeg", data: sendB64 } }, { type: "text", text: `Analyze ALL educational questions visible in this image. Return ONLY valid JSON, start with { end with }, no backticks: {"questions":[{"subject":"Matematik","topic":"topic in Turkish","subtopic":"subtopic in Turkish","difficulty":"Kolay or Orta or Zor","question":"full question text in Turkish","summary":"one sentence in Turkish","answer":"one line answer in Turkish","advice":"one sentence in Turkish","bbox":{"top":0,"left":0,"bottom":50,"right":50}}]}` }] }], 6000);      const parsed = extractJson(raw);
+raw = await callClaude([{ role: "user", content: [{ type: "image", source: { type: "base64", media_type: "image/jpeg", data: sendB64 } }, { type: "text", text: `Analyze ALL educational questions visible in this image. Return ONLY valid JSON, start with { end with }, no backticks: {"questions":[{"subject":"Matematik","topic":"topic in Turkish","subtopic":"subtopic in Turkish","difficulty":"Kolay or Orta or Zor","question":"full question text in Turkish","summary":"one sentence in Turkish","answer":"step by step detailed solution in Turkish","advice":"one sentence in Turkish","bbox":{"top":0,"left":0,"bottom":50,"right":50}}]}` }] }], 8000);      const parsed = extractJson(raw);
       const analyses = (parsed.questions || [parsed]).filter((a: any) => a?.topic);
       if (!analyses.length) throw new Error("Soru tespit edilemedi");
       const time = new Date().toLocaleTimeString("tr-TR", { hour: "2-digit", minute: "2-digit" });
@@ -498,7 +498,7 @@ raw = await callClaude([{ role: "user", content: [{ type: "image", source: { typ
   return { id: Date.now() + i, url: qUrl, analysis: a, time };
 }));
       const updated = [...qs, ...newQs]; setQs(updated);
-      if (currentUser) { for (const q of newQs) await sSet(`qimg:${currentUser}:${q.id}`, thumbnail || ""); await saveQs(currentUser, updated); }
+if (currentUser) { for (const q of newQs) await sSet(`qimg:${currentUser}:${q.id}`, q.url || ""); await saveQs(currentUser, updated); }
       if (updated.length % CYCLE === 0) buildReport(updated.slice(-CYCLE), true);
 } catch (e: any) { setErr("Hata: " + (e.message || String(e))); }
     setLoading(false);
