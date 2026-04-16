@@ -475,26 +475,27 @@ async function cropImage(dataUrl: string, cropPct: { left: number; top: number; 
   });
 }
 
-  const analyzeImage = async (cropPct: any) => {
+const analyzeImage = async (cropPct: any) => {
     setCropSrc(null);
     const srcDataUrl = pendingDataUrl.current; if (!srcDataUrl) { setErr("Dosya bulunamadı"); return; }
     setLoading(true); setErr("");
+    let raw = "";
     try {
-      // Önce crop et
       const croppedDataUrl = cropPct ? await cropImage(srcDataUrl, cropPct) : srcDataUrl;
-      
       const compressed = await compressDataUrl(croppedDataUrl);
       let sendB64: string, thumbnail: string;
       if (compressed) { sendB64 = compressed.b64; thumbnail = compressed.dataUrl; }
       else { sendB64 = croppedDataUrl.split(",")[1] || ""; thumbnail = croppedDataUrl; if (sendB64.length > 4_800_000) { setErr("Fotoğraf çok büyük."); setLoading(false); return; } }
-      
-      const raw = await callClaude([{ role: "user", content: [{ type: "image", source: { type: "base64", media_type: "image/jpeg", data: sendB64 } }, { type: "text", text: `Analyze ALL educational questions visible in this image. You MUST return complete valid JSON only. Do not truncate. Return ONLY this JSON structure with no extra text: {"questions":[{"subject":"Matematik","topic":"topic in Turkish","subtopic":"subtopic in Turkish","difficulty":"Kolay or Orta or Zor","question":"full question text in Turkish","summary":"brief summary in Turkish","answer":"step by step solution in Turkish","advice":"study advice in Turkish"}]}` }] }], 4000);      const parsed = extractJson(raw);      const analyses = (parsed.questions || [parsed]).filter((a: any) => a?.topic);
+      raw = await callClaude([{ role: "user", content: [{ type: "image", source: { type: "base64", media_type: "image/jpeg", data: sendB64 } }, { type: "text", text: `Analyze ALL educational questions visible in this image. You MUST return complete valid JSON only. Do not truncate. Return ONLY this JSON structure with no extra text: {"questions":[{"subject":"Matematik","topic":"topic in Turkish","subtopic":"subtopic in Turkish","difficulty":"Kolay or Orta or Zor","question":"full question text in Turkish","summary":"brief summary in Turkish","answer":"step by step solution in Turkish","advice":"study advice in Turkish"}]}` }] }], 4000);
+      const parsed = extractJson(raw);
+      const analyses = (parsed.questions || [parsed]).filter((a: any) => a?.topic);
       if (!analyses.length) throw new Error("Soru tespit edilemedi");
       const time = new Date().toLocaleTimeString("tr-TR", { hour: "2-digit", minute: "2-digit" });
-      const newQs = analyses.map((a: any, i: number) => ({ id: Date.now() + i, url: thumbnail, analysis: a, time }));      const updated = [...qs, ...newQs]; setQs(updated);
+      const newQs = analyses.map((a: any, i: number) => ({ id: Date.now() + i, url: thumbnail, analysis: a, time }));
+      const updated = [...qs, ...newQs]; setQs(updated);
       if (currentUser) { for (const q of newQs) await sSet(`qimg:${currentUser}:${q.id}`, thumbnail || ""); await saveQs(currentUser, updated); }
       if (updated.length % CYCLE === 0) buildReport(updated.slice(-CYCLE), true);
-} catch (e: any) { setErr("Hata: " + (e.message || String(e)) + " | RAW: " + (typeof raw !== 'undefined' ? raw.slice(0, 200) : 'yok')); }
+    } catch (e: any) { setErr("Hata: " + (e.message || String(e)) + " | RAW: " + raw.slice(0, 300)); }
     setLoading(false);
   };
 
