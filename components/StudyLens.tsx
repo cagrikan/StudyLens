@@ -1,7 +1,7 @@
 "use client";
 import { useState, useRef } from "react";
 
-const MODEL = "claude-sonnet-4-20250514";
+const MODEL = "claude-sonnet-4-5";
 const CYCLE = 10;
 const MIN_ACTION = 3;
 const P = "#6C63FF";
