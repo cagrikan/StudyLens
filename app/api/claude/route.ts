@@ -1,28 +1,31 @@
 import { NextRequest, NextResponse } from "next/server";
-import { kv } from "@vercel/kv";
-
-export async function GET(req: NextRequest) {
-  const { searchParams } = new URL(req.url);
-  const key = searchParams.get("key");
-  if (!key) return NextResponse.json({ error: "key required" }, { status: 400 });
-
-  const value = await kv.get<string>(key);
-  return NextResponse.json({ value: value ?? null });
-}
 
 export async function POST(req: NextRequest) {
-  const { key, value } = await req.json();
-  if (!key) return NextResponse.json({ error: "key required" }, { status: 400 });
+  try {
+    const body = await req.json();
 
-  await kv.set(key, value);
-  return NextResponse.json({ ok: true });
-}
+    const response = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-api-key": process.env.ANTHROPIC_API_KEY!,
+        "anthropic-version": "2023-06-01",
+      },
+      body: JSON.stringify({
+        model: "claude-sonnet-4-20250514",
+        max_tokens: body.max_tokens ?? 1000,
+        messages: body.messages,
+      }),
+    });
 
-export async function DELETE(req: NextRequest) {
-  const { searchParams } = new URL(req.url);
-  const key = searchParams.get("key");
-  if (!key) return NextResponse.json({ error: "key required" }, { status: 400 });
+    const data = await response.json();
 
-  await kv.del(key);
-  return NextResponse.json({ ok: true });
+    if (!response.ok) {
+      return NextResponse.json({ error: data }, { status: response.status });
+    }
+
+    return NextResponse.json(data);
+  } catch (err: any) {
+    return NextResponse.json({ error: err.message }, { status: 500 });
+  }
 }
