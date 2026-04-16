@@ -327,6 +327,7 @@ function ImagePreview({ url, onClose }: { url: string; onClose: () => void }) {
 
 function QuestionDetail({ q, onClose }: { q: any; onClose: () => void }) {
   const a = q.analysis;
+  const [showAnswer, setShowAnswer] = useState(false);
   return (
     <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.8)", zIndex: 200, display: "flex", alignItems: "flex-end", justifyContent: "center", backdropFilter: "blur(8px)" }} onClick={onClose}>
       <div onClick={e => e.stopPropagation()} style={{ background: CARD, border: `1px solid ${BORDER}`, borderRadius: "28px 28px 0 0", width: "100%", maxWidth: 420, maxHeight: "90vh", overflowY: "auto", paddingBottom: 32 }}>
@@ -357,7 +358,17 @@ function QuestionDetail({ q, onClose }: { q: any; onClose: () => void }) {
         <div style={{ margin: "10px 16px 0", padding: "14px 16px", background: "rgba(108,99,255,0.1)", borderRadius: 16, borderLeft: `3px solid ${P}` }}>
           <div style={{ fontSize: 11, fontWeight: 700, color: P2, marginBottom: 6, textTransform: "uppercase", letterSpacing: .8 }}>Nasıl Çalışmalısın?</div>
           <div style={{ fontSize: 14, color: "#C4B5FD", lineHeight: 1.7 }}>{a.advice}</div>
-        </div>
+</div>
+<button onClick={() => setShowAnswer(!showAnswer)}
+  style={{ display: "block", margin: "10px 16px 0", width: "calc(100% - 32px)", background: showAnswer ? "rgba(255,101,132,0.1)" : "rgba(52,211,153,0.1)", border: `1px solid ${showAnswer ? "rgba(255,101,132,0.3)" : "rgba(52,211,153,0.3)"}`, borderRadius: 16, padding: 14, color: showAnswer ? "#FF8FA5" : "#4EEDB3", fontSize: 14, fontWeight: 700, cursor: "pointer" }}>
+  {showAnswer ? "Cevabı Gizle" : "Cevabı Gör"}
+</button>
+{showAnswer && a.answer && (
+  <div style={{ margin: "10px 16px 0", padding: "14px 16px", background: "rgba(52,211,153,0.08)", borderRadius: 16, borderLeft: "3px solid #34D399" }}>
+    <div style={{ fontSize: 11, fontWeight: 700, color: "#4EEDB3", marginBottom: 6, textTransform: "uppercase", letterSpacing: .8 }}>Çözüm & Cevap</div>
+    <div style={{ fontSize: 14, color: "#4EEDB3", lineHeight: 1.7 }}>{a.answer}</div>
+  </div>
+)}
         <button onClick={onClose} style={{ display: "block", margin: "16px 16px 0", width: "calc(100% - 32px)", background: "rgba(255,255,255,0.05)", border: `1px solid ${BORDER}`, borderRadius: 16, padding: 14, color: TEXT, fontSize: 15, fontWeight: 600, cursor: "pointer" }}>Kapat</button>
       </div>
     </div>
@@ -454,8 +465,7 @@ async function cropImage(dataUrl: string, cropPct: { left: number; top: number; 
       if (compressed) { sendB64 = compressed.b64; thumbnail = compressed.dataUrl; }
       else { sendB64 = croppedDataUrl.split(",")[1] || ""; thumbnail = croppedDataUrl; if (sendB64.length > 4_800_000) { setErr("Fotoğraf çok büyük."); setLoading(false); return; } }
       
-      const raw = await callClaude([{ role: "user", content: [{ type: "image", source: { type: "base64", media_type: "image/jpeg", data: sendB64 } }, { type: "text", text: `Identify all educational questions or content in this image. Respond with ONLY a JSON object (no markdown): {"questions":[{"subject":"Physics","topic":"main topic in Turkish","subtopic":"sub topic in Turkish","difficulty":"Kolay or Orta or Zor","question":"full question text in Turkish exactly as written","summary":"brief question summary in Turkish","advice":"study advice in Turkish"}]}` }] }], 1500);
-      const parsed = extractJson(raw);
+      const raw = await callClaude([{ role: "user", content: [{ type: "image", source: { type: "base64", media_type: "image/jpeg", data: sendB64 } }, { type: "text", text: `Identify all educational questions or content in this image. Respond with ONLY a JSON object (no markdown): {"questions":[{"subject":"Physics","topic":"main topic in Turkish","subtopic":"sub topic in Turkish","difficulty":"Kolay or Orta or Zor","question":"full question text in Turkish exactly as written","summary":"brief question summary in Turkish","answer":"step by step solution and answer in Turkish","advice":"study advice in Turkish"}]}` }] }], 1500);      const parsed = extractJson(raw);
       const analyses = (parsed.questions || [parsed]).filter((a: any) => a?.topic);
       if (!analyses.length) throw new Error("Soru tespit edilemedi");
       const time = new Date().toLocaleTimeString("tr-TR", { hour: "2-digit", minute: "2-digit" });
