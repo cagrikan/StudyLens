@@ -448,18 +448,21 @@ export default function App() {
     setGenRep(false);
   };
 
-  const buildTest = async () => {
+const buildTest = async () => {
     const data = qs.slice(-Math.min(total, CYCLE));
-    setGenTest(true); setAnswers({}); setSubmitted(false);
+    setGenTest(true); setAnswers({}); setSubmitted(false); setTestErr("");
     try {
       const list = data.map((q, i) => `${i + 1}. ${q.analysis.subject} - ${q.analysis.topic} - ${q.analysis.subtopic}`).join("\n");
-      const raw = await callClaude([{ role: "user", content: `Student weak topics:\n${list}\n\nCreate 5 multiple-choice questions in Turkish. Return ONLY a raw JSON object, no markdown, no backticks:\n{"qs":[{"subject":"...","topic":"...","q":"question?","opts":{"A":"...","B":"...","C":"...","D":"..."},"ans":"A","exp":"explanation"}]}` }], 1000);
-      const parsed = extractJson(raw); if (!parsed || !parsed.qs?.length) throw new Error("Geçersiz test formatı.");
+      const raw = await callClaude([{ role: "user", content: `Student weak topics:\n${list}\n\nCreate 5 multiple-choice questions in Turkish. Return ONLY a raw JSON object, no markdown, no backticks:\n{"qs":[{"subject":"...","topic":"...","q":"question?","opts":{"A":"...","B":"...","C":"...","D":"..."},"ans":"A","exp":"explanation"}]}` }], 2000);
+      const parsed = extractJson(raw);
+      if (!parsed || !parsed.qs?.length) throw new Error("Geçersiz test formatı: " + raw.slice(0, 100));
       setTest(parsed); setTab("test");
-    } catch (e: any) { console.error(e); }
+    } catch (e: any) {
+      alert("Test hatası: " + (e.message || String(e)));
+      console.error(e);
+    }
     setGenTest(false);
   };
-
   const score = submitted && test ? test.qs.filter((q: any, i: number) => answers[i] === q.ans).length : 0;
 
   if (!currentUser) return <AuthScreen onAuth={handleAuth} />;
