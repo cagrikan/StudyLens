@@ -337,9 +337,12 @@ function ImagePreview({ url, onClose }: { url: string; onClose: () => void }) {
 function QuestionDetail({ q, onClose }: { q: any; onClose: () => void }) {
   const a = q.analysis;
   const [showAnswer, setShowAnswer] = useState(false);
+  const startY = useRef(0);
+  const handleTouchStart = (e: React.TouchEvent) => { startY.current = e.touches[0].clientY; };
+  const handleTouchEnd = (e: React.TouchEvent) => { if (e.changedTouches[0].clientY - startY.current > 80) onClose(); };
   return (
     <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.8)", zIndex: 200, display: "flex", alignItems: "flex-end", justifyContent: "center", backdropFilter: "blur(8px)" }} onClick={onClose}>
-      <div onClick={e => e.stopPropagation()} style={{ background: CARD, border: `1px solid ${BORDER}`, borderRadius: "28px 28px 0 0", width: "100%", maxWidth: 420, maxHeight: "90vh", overflowY: "auto", paddingBottom: 32 }}>
+      <div onClick={e => e.stopPropagation()} onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd} style={{ background: CARD, border: `1px solid ${BORDER}`, borderRadius: "28px 28px 0 0", width: "100%", maxWidth: 420, maxHeight: "90vh", overflowY: "auto", paddingBottom: 32 }}>
       <div onClick={onClose} style={{ display: "flex", justifyContent: "center", padding: "14px 0 6px", cursor: "pointer" }}><div style={{ width: 40, height: 4, background: "rgba(255,255,255,0.4)", borderRadius: 2 }} /></div>
         {q.url && <div style={{ margin: "8px 16px 0", borderRadius: 18, overflow: "hidden", background: "#000", display: "flex", justifyContent: "center" }}><img src={q.url} alt="" style={{ maxWidth: "100%", maxHeight: 260, objectFit: "contain" }} /></div>}
         <div style={{ display: "flex", gap: 8, padding: "14px 16px 0", flexWrap: "wrap", alignItems: "center" }}>
