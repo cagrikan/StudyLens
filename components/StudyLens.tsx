@@ -397,6 +397,8 @@ export default function App() {
   const [cropSrc, setCropSrc] = useState<string | null>(null);
   const [previewImg, setPreviewImg] = useState<string | null>(null);
   const [detailQ, setDetailQ] = useState<any>(null);
+  const [selectMode, setSelectMode] = useState(false);
+  const [selected, setSelected] = useState<Set<number>>(new Set());
   const fileRef = useRef<HTMLInputElement>(null);
   const pendingDataUrl = useRef<string | null>(null);
 
@@ -425,6 +427,18 @@ export default function App() {
 
   const handleAuth = async (u: string) => { setCurrentUser(u); setQs([]); setReport(null); setTest(null); setTab("home"); await loadUserData(u); };
 const logout = () => { localStorage.removeItem("sl_user"); setCurrentUser(null); setQs([]); setReport(null); setTest(null); setAnswers({}); setSubmitted(false); setTab("home"); };   const saveQs = async (u: string, list: any[]) => { await sSet(`qmeta:${u}`, JSON.stringify(list.map(({ url, ...r }) => r))); };
+const deleteSelected = async () => {
+  if (!currentUser || selected.size === 0) return;
+  const toDelete = qs.filter(q => selected.has(q.id));
+  const updated = qs.filter(q => !selected.has(q.id));
+  setQs(updated);
+  await saveQs(currentUser, updated);
+  for (const q of toDelete) {
+    try { await fetch(`/api/storage?key=${encodeURIComponent(`qimg:${currentUser}:${q.id}`)}`, { method: "DELETE" }); } catch {}
+  }
+  setSelected(new Set());
+  setSelectMode(false);
+};
 
   const handleFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]; if (!file) return;
@@ -636,12 +650,60 @@ const buildTest = async () => {
         )}
 
         {/* SORULAR */}
-        {tab === "sorular" && (
-          <div style={{ padding: 16 }}>
-            <div style={{ fontSize: 12, fontWeight: 700, color: MUTED, marginBottom: 14, textTransform: "uppercase", letterSpacing: .8 }}>{total} soru kaydedildi</div>
-            {total === 0 ? <div style={{ textAlign: "center", padding: 48, color: MUTED, fontSize: 14 }}>Henüz soru yok</div> : [...qs].reverse().map(q => <QCard key={q.id} q={q} />)}
+{tab === "sorular" && (
+  <div style={{ padding: 16 }}>
+    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
+      <div style={{ fontSize: 12, fontWeight: 700, color: MUTED, textTransform: "uppercase", letterSpacing: .8 }}>{total} soru kaydedildi</div>
+      {total > 0 && (
+        <button onClick={() => { setSelectMode(!selectMode); setSelected(new Set()); }}
+          style={{ background: selectMode ? "rgba(255,101,132,0.1)" : "rgba(108,99,255,0.1)", border: `1px solid ${selectMode ? "rgba(255,101,132,0.3)" : "rgba(108,99,255,0.3)"}`, borderRadius: 10, padding: "6px 14px", color: selectMode ? "#FF8FA5" : P2, fontSize: 12, fontWeight: 700, cursor: "pointer" }}>
+          {selectMode ? "İptal" : "Seç"}
+        </button>
+      )}
+    </div>
+
+    {selectMode && selected.size > 0 && (
+      <button onClick={deleteSelected}
+        style={{ width: "100%", background: "rgba(255,101,132,0.12)", border: "1px solid rgba(255,101,132,0.3)", borderRadius: 14, padding: 14, color: "#FF8FA5", fontSize: 14, fontWeight: 700, cursor: "pointer", marginBottom: 14 }}>
+        🗑 {selected.size} soruyu sil
+      </button>
+    )}
+
+    {total === 0
+      ? <div style={{ textAlign: "center", padding: 48, color: MUTED, fontSize: 14 }}>Henüz soru yok</div>
+      : [...qs].reverse().map(q => (
+        <div key={q.id} onClick={() => {
+          if (selectMode) {
+            const s = new Set(selected);
+            s.has(q.id) ? s.delete(q.id) : s.add(q.id);
+            setSelected(s);
+          } else {
+            setDetailQ(q);
+          }
+        }} className="card-hover"
+          style={{ background: selected.has(q.id) ? "rgba(255,101,132,0.1)" : CARD, border: `1px solid ${selected.has(q.id) ? "rgba(255,101,132,0.4)" : BORDER}`, borderRadius: 18, padding: 14, marginBottom: 12, cursor: "pointer", boxShadow: "0 4px 16px rgba(0,0,0,0.25)", display: "flex", gap: 12, alignItems: "center" }}>
+          {selectMode && (
+            <div style={{ width: 22, height: 22, borderRadius: 8, border: `2px solid ${selected.has(q.id) ? "#FF8FA5" : BORDER}`, background: selected.has(q.id) ? "rgba(255,101,132,0.2)" : "transparent", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+              {selected.has(q.id) && <span style={{ color: "#FF8FA5", fontSize: 13, fontWeight: 800 }}>✓</span>}
+            </div>
+          )}
+          <div style={{ flex: 1, minWidth: 0, display: "flex", gap: 12, alignItems: "center" }}>
+            {q.url && <img src={q.url} alt="" style={{ width: 64, height: 64, borderRadius: 14, objectFit: "cover", flexShrink: 0, border: `1px solid ${BORDER}` }} />}
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ display: "flex", gap: 6, marginBottom: 6, flexWrap: "wrap" }}>
+                <Chip label={q.analysis.subject} style={{ background: subS(q.analysis.subject).bg, color: subS(q.analysis.subject).tx }} />
+                <Chip label={q.analysis.difficulty} style={{ background: difS(q.analysis.difficulty).bg, color: difS(q.analysis.difficulty).tx }} />
+                <span style={{ fontSize: 11, color: MUTED, marginLeft: "auto" }}>{q.time}</span>
+              </div>
+              <div style={{ fontSize: 14, fontWeight: 700, color: TEXT, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{q.analysis.topic}</div>
+              <div style={{ fontSize: 12, color: P2, marginTop: 2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontWeight: 600 }}>{q.analysis.subtopic}</div>
+            </div>
           </div>
-        )}
+        </div>
+      ))
+    }
+  </div>
+)}
 
         {/* RAPOR */}
         {tab === "rapor" && (
