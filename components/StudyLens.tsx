@@ -494,7 +494,7 @@ async function cropImage(dataUrl: string, cropPct: { left: number; top: number; 
       const newQs = analyses.map((a: any, i: number) => ({ id: Date.now() + i, url: thumbnail, analysis: a, time }));      const updated = [...qs, ...newQs]; setQs(updated);
       if (currentUser) { for (const q of newQs) await sSet(`qimg:${currentUser}:${q.id}`, thumbnail || ""); await saveQs(currentUser, updated); }
       if (updated.length % CYCLE === 0) buildReport(updated.slice(-CYCLE), true);
-    } catch (e: any) { setErr("Hata: " + (e.message || String(e))); }
+} catch (e: any) { setErr("Hata: " + (e.message || String(e)) + " | RAW: " + (typeof raw !== 'undefined' ? raw.slice(0, 200) : 'yok')); }
     setLoading(false);
   };
 
