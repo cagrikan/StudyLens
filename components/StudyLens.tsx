@@ -98,21 +98,33 @@ async function compressDataUrl(srcDataUrl: string, maxB64 = 4_800_000) {
 }
 
 function extractJson(raw: string) {
-  let clean = raw.replace(/```json|```/g, "").trim();
+  let clean = raw
+    .replace(/```json|```/g, "")
+    .replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F-\u009F]/g, "")
+    .trim();
+
   const start = clean.indexOf("{");
   if (start > 0) clean = clean.slice(start);
-  const end = clean.lastIndexOf("}");
-  if (end !== -1) clean = clean.slice(0, end + 1);
-  clean = clean
-    .replace(/,\s*}/g, "}")
-    .replace(/,\s*]/g, "]")
-    .replace(/[\u0000-\u001F\u007F-\u009F]/g, " ");
+
+  // Parantez sayısını dengele
+  let depth = 0;
+  let endIdx = -1;
+  for (let i = 0; i < clean.length; i++) {
+    if (clean[i] === "{") depth++;
+    else if (clean[i] === "}") { depth--; if (depth === 0) { endIdx = i; break; } }
+  }
+  if (endIdx !== -1) clean = clean.slice(0, endIdx + 1);
+
+  clean = clean.replace(/,\s*}/g, "}").replace(/,\s*]/g, "]");
+
+  // Eksik kapanışları tamamla
   const opens = (clean.match(/\[/g) || []).length;
   const closes = (clean.match(/\]/g) || []).length;
+  for (let i = 0; i < opens - closes; i++) clean += "]";
   const opensBrace = (clean.match(/\{/g) || []).length;
   const closesBrace = (clean.match(/\}/g) || []).length;
-  for (let i = 0; i < opens - closes; i++) clean += "]";
   for (let i = 0; i < opensBrace - closesBrace; i++) clean += "}";
+
   try { return JSON.parse(clean); } catch (e) {
     throw new Error("JSON parse hatası: " + String(e).slice(0, 80));
   }
