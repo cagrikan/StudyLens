@@ -341,28 +341,29 @@ function QuestionDetail({ q, onClose }: { q: any; onClose: () => void }) {
   const handleTouchStart = (e: React.TouchEvent) => { startY.current = e.touches[0].clientY; };
   const handleTouchEnd = (e: React.TouchEvent) => { if (e.changedTouches[0].clientY - startY.current > 80) onClose(); };
   return (
-    <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.8)", zIndex: 200, display: "flex", alignItems: "flex-end", justifyContent: "center", backdropFilter: "blur(8px)" }} onClick={onClose}>
-      <div onClick={e => e.stopPropagation()} onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd} style={{ background: CARD, border: `1px solid ${BORDER}`, borderRadius: "28px 28px 0 0", width: "100%", maxWidth: 420, maxHeight: "90vh", overflowY: "auto", paddingBottom: 32 }}>
-      <div onClick={onClose} style={{ display: "flex", justifyContent: "center", padding: "20px 0 10px", cursor: "pointer" }}>
-  <div style={{ width: 40, height: 4, background: "rgba(255,255,255,0.4)", borderRadius: 2 }} />
-      </div>        {q.url && <div style={{ margin: "8px 16px 0", borderRadius: 18, overflow: "hidden", background: "#000", display: "flex", justifyContent: "center" }}><img src={q.url} alt="" style={{ maxWidth: "100%", maxHeight: 260, objectFit: "contain" }} /></div>}
-        <div style={{ display: "flex", gap: 8, padding: "14px 16px 0", flexWrap: "wrap", alignItems: "center" }}>
-          <Chip label={a.subject} style={{ background: subS(a.subject).bg, color: subS(a.subject).tx }} />
-          <Chip label={a.difficulty} style={{ background: difS(a.difficulty).bg, color: difS(a.difficulty).tx }} />
-          <span style={{ fontSize: 11, color: MUTED, marginLeft: "auto" }}>{q.time}</span>
-        </div>
-        <div style={{ padding: "12px 16px 0" }}>
-          <div style={{ fontSize: 19, fontWeight: 700, color: TEXT }}>{a.topic}</div>
-          <div style={{ fontSize: 14, color: P2, fontWeight: 600, marginTop: 4 }}>{a.subtopic}</div>
-        </div>
-        <div style={{ margin: "12px 16px 0", padding: "14px 16px", background: SURFACE, borderRadius: 16, border: `1px solid ${BORDER}` }}>
-          <div style={{ fontSize: 11, fontWeight: 700, color: MUTED, marginBottom: 6, textTransform: "uppercase", letterSpacing: .8 }}>Soru</div>
-          {a.question && (
-          <div style={{ margin: "12px 16px 0", padding: "14px 16px", background: SURFACE, borderRadius: 16, border: `1px solid ${BORDER}` }}>
-          <div style={{ fontSize: 11, fontWeight: 700, color: MUTED, marginBottom: 6, textTransform: "uppercase", letterSpacing: .8 }}>Soru Metni</div>
-          <div style={{ fontSize: 14, color: TEXT, lineHeight: 1.7 }}>{a.question}</div>
-  </div>
-)}
+   <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.8)", zIndex: 200, display: "flex", alignItems: "flex-end", justifyContent: "center", backdropFilter: "blur(8px)" }} onClick={onClose}>
+  <div onClick={e => e.stopPropagation()} style={{ background: CARD, border: `1px solid ${BORDER}`, borderRadius: "28px 28px 0 0", width: "100%", maxWidth: 420, maxHeight: "90vh", overflowY: "auto", paddingBottom: 32 }}>
+    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "16px 16px 0" }}>
+      <div style={{ fontSize: 16, fontWeight: 700, color: TEXT }}>Soru Detayı</div>
+      <button onClick={onClose} style={{ background: "rgba(255,255,255,0.08)", border: `1px solid ${BORDER}`, borderRadius: 12, width: 34, height: 34, color: TEXT, cursor: "pointer", fontSize: 20, display: "flex", alignItems: "center", justifyContent: "center" }}>×</button>
+    </div>
+    {q.url && <div style={{ margin: "8px 16px 0", borderRadius: 18, overflow: "hidden", background: "#000", display: "flex", justifyContent: "center" }}><img src={q.url} alt="" style={{ maxWidth: "100%", maxHeight: 260, objectFit: "contain" }} /></div>}
+    <div style={{ display: "flex", gap: 8, padding: "14px 16px 0", flexWrap: "wrap", alignItems: "center" }}>
+      <Chip label={a.subject} style={{ background: subS(a.subject).bg, color: subS(a.subject).tx }} />
+      <Chip label={a.difficulty} style={{ background: difS(a.difficulty).bg, color: difS(a.difficulty).tx }} />
+      <span style={{ fontSize: 11, color: MUTED, marginLeft: "auto" }}>{q.time}</span>
+    </div>
+    <div style={{ padding: "12px 16px 0" }}>
+      <div style={{ fontSize: 19, fontWeight: 700, color: TEXT }}>{a.topic}</div>
+      <div style={{ fontSize: 14, color: P2, fontWeight: 600, marginTop: 4 }}>{a.subtopic}</div>
+    </div>
+    {a.question && (
+      <div style={{ margin: "12px 16px 0", padding: "14px 16px", background: SURFACE, borderRadius: 16, border: `1px solid ${BORDER}` }}>
+        <div style={{ fontSize: 11, fontWeight: 700, color: MUTED, marginBottom: 6, textTransform: "uppercase", letterSpacing: .8 }}>Soru Metni</div>
+        <div style={{ fontSize: 14, color: TEXT, lineHeight: 1.7 }}>{a.question}</div>
+      </div>
+    )}
+
 <div style={{ margin: "10px 16px 0", padding: "14px 16px", background: SURFACE, borderRadius: 16, border: `1px solid ${BORDER}` }}>
   <div style={{ fontSize: 11, fontWeight: 700, color: MUTED, marginBottom: 6, textTransform: "uppercase", letterSpacing: .8 }}>Özet</div>
   <div style={{ fontSize: 14, color: TEXT, lineHeight: 1.7 }}>{a.summary}</div>
@@ -490,7 +491,7 @@ const analyzeImage = async (cropPct: any) => {
       let sendB64: string, thumbnail: string;
       if (compressed) { sendB64 = compressed.b64; thumbnail = compressed.dataUrl; }
       else { sendB64 = croppedDataUrl.split(",")[1] || ""; thumbnail = croppedDataUrl; if (sendB64.length > 4_800_000) { setErr("Fotoğraf çok büyük."); setLoading(false); return; } }
-raw = await callClaude([{ role: "user", content: [{ type: "image", source: { type: "base64", media_type: "image/jpeg", data: sendB64 } }, { type: "text", text: `Analyze ALL educational questions visible in this image. Return ONLY valid JSON, start with { end with }, no backticks: {"questions":[{"subject":"Matematik","topic":"topic in Turkish","subtopic":"subtopic in Turkish","difficulty":"Kolay or Orta or Zor","question":"full question text in Turkish","summary":"one sentence in Turkish","answer":"step by step detailed solution in Turkish","advice":"one sentence in Turkish","bbox":{"top":0,"left":0,"bottom":50,"right":50}}]}` }] }], 8000);      const parsed = extractJson(raw);
+raw = await callClaude([{ role: "user", content: [{ type: "image", source: { type: "base64", media_type: "image/jpeg", data: sendB64 } }, { type: "text", text: `Analyze ALL educational questions visible in this image. Return ONLY valid JSON, start with { end with }, no backticks: {"questions":[{"subject":"Matematik","topic":"topic in Turkish","subtopic":"subtopic in Turkish","difficulty":"Kolay or Orta or Zor","question":"full question text in Turkish","summary":"one sentence in Turkish","answer":"detailed step by step solution with explanation in Turkish","advice":"one sentence in Turkish","bbox":{"top":0,"left":0,"bottom":50,"right":50}}]}` }] }], 8000);      const parsed = extractJson(raw);
       const analyses = (parsed.questions || [parsed]).filter((a: any) => a?.topic);
       if (!analyses.length) throw new Error("Soru tespit edilemedi");
       const time = new Date().toLocaleTimeString("tr-TR", { hour: "2-digit", minute: "2-digit" });
