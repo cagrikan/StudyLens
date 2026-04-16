@@ -453,8 +453,7 @@ const buildTest = async () => {
     setGenTest(true); setAnswers({}); setSubmitted(false);
     try {
       const list = data.map((q, i) => `${i + 1}. ${q.analysis.subject} - ${q.analysis.topic} - ${q.analysis.subtopic}`).join("\n");
-      const raw = await callClaude([{ role: "user", content: `Student weak topics:\n${list}\n\nCreate 5 multiple-choice questions in Turkish. Return ONLY a raw JSON object, no markdown, no backticks:\n{"qs":[{"subject":"...","topic":"...","q":"question?","opts":{"A":"...","B":"...","C":"...","D":"..."},"ans":"A","exp":"explanation"}]}` }], 2000);
-      const parsed = extractJson(raw);
+      const raw = await callClaude([{ role: "user", content: `Student weak topics:\n${list}\n\nCreate 5 multiple-choice questions in Turkish. Return ONLY valid JSON, no markdown, no backticks, no extra text before or after. The response must start with { and end with }:\n{"qs":[{"subject":"string","topic":"string","q":"question text","opts":{"A":"option","B":"option","C":"option","D":"option"},"ans":"A","exp":"explanation"}]}` }], 3000);      const parsed = extractJson(raw);
       if (!parsed || !parsed.qs?.length) throw new Error("Geçersiz test formatı: " + raw.slice(0, 100));
       setTest(parsed); setTab("test");
     } catch (e: any) {
