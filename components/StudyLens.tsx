@@ -415,8 +415,7 @@ export default function App() {
       if (compressed) { sendB64 = compressed.b64; thumbnail = compressed.dataUrl; }
       else { sendB64 = srcDataUrl.split(",")[1] || ""; thumbnail = srcDataUrl; if (sendB64.length > 4_800_000) { setErr("Fotoğraf çok büyük."); setLoading(false); return; } }
       const cropNote = cropPct ? `Focus only on region: left ${cropPct.left}% to right ${cropPct.right}%, top ${cropPct.top}% to bottom ${cropPct.bottom}%.` : "";
-      const raw = await callClaude([{ role: "user", content: [{ type: "image", source: { type: "base64", media_type: "image/jpeg", data: sendB64 } }, { type: "text", text: `${cropNote} Identify all educational questions...{"questions":[{"subject":...,"advice":"study advice in Turkish"}]}`` }] }], 1500);
-      const parsed = extractJson(raw);
+      const raw = await callClaude([{ role: "user", content: [{ type: "image", source: { type: "base64", media_type: "image/jpeg", data: sendB64 } }, { type: "text", text: `${cropNote} Identify all educational questions or content in this image. Respond with ONLY a JSON object (no markdown): {"questions":[{"subject":"Physics","topic":"main topic in Turkish","subtopic":"sub topic in Turkish","difficulty":"Kolay or Orta or Zor","question":"full question text in Turkish exactly as written","summary":"brief question summary in Turkish","advice":"study advice in Turkish"}]}` }] }], 1500);      const parsed = extractJson(raw);
       const analyses = (parsed.questions || [parsed]).filter((a: any) => a?.topic);
       if (!analyses.length) throw new Error("Soru tespit edilemedi");
       const time = new Date().toLocaleTimeString("tr-TR", { hour: "2-digit", minute: "2-digit" });
