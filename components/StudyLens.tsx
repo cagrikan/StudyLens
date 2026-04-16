@@ -413,17 +413,40 @@ export default function App() {
     catch (ex: any) { setErr("Dosya okunamadı: " + ex.message); }
   };
 
+async function cropImage(dataUrl: string, cropPct: { left: number; top: number; right: number; bottom: number }): Promise<string> {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement("canvas");
+      const x = Math.round(img.width * cropPct.left / 100);
+      const y = Math.round(img.height * cropPct.top / 100);
+      const w = Math.round(img.width * (cropPct.right - cropPct.left) / 100);
+      const h = Math.round(img.height * (cropPct.bottom - cropPct.top) / 100);
+      canvas.width = w;
+      canvas.height = h;
+      const ctx = canvas.getContext("2d")!;
+      ctx.drawImage(img, x, y, w, h, 0, 0, w, h);
+      resolve(canvas.toDataURL("image/jpeg", 0.85));
+    };
+    img.src = dataUrl;
+  });
+}
+
   const analyzeImage = async (cropPct: any) => {
     setCropSrc(null);
     const srcDataUrl = pendingDataUrl.current; if (!srcDataUrl) { setErr("Dosya bulunamadı"); return; }
     setLoading(true); setErr("");
     try {
-      const compressed = await compressDataUrl(srcDataUrl);
+      // Önce crop et
+      const croppedDataUrl = cropPct ? await cropImage(srcDataUrl, cropPct) : srcDataUrl;
+      
+      const compressed = await compressDataUrl(croppedDataUrl);
       let sendB64: string, thumbnail: string;
       if (compressed) { sendB64 = compressed.b64; thumbnail = compressed.dataUrl; }
-      else { sendB64 = srcDataUrl.split(",")[1] || ""; thumbnail = srcDataUrl; if (sendB64.length > 4_800_000) { setErr("Fotoğraf çok büyük."); setLoading(false); return; } }
-      const cropNote = cropPct ? `Focus only on region: left ${cropPct.left}% to right ${cropPct.right}%, top ${cropPct.top}% to bottom ${cropPct.bottom}%.` : "";
-      const raw = await callClaude([{ role: "user", content: [{ type: "image", source: { type: "base64", media_type: "image/jpeg", data: sendB64 } }, { type: "text", text: `${cropNote} Identify all educational questions or content in this image. Respond with ONLY a JSON object (no markdown): {"questions":[{"subject":"Physics","topic":"main topic in Turkish","subtopic":"sub topic in Turkish","difficulty":"Kolay or Orta or Zor","question":"full question text in Turkish exactly as written","summary":"brief question summary in Turkish","advice":"study advice in Turkish"}]}` }] }], 1500);      const parsed = extractJson(raw);
+      else { sendB64 = croppedDataUrl.split(",")[1] || ""; thumbnail = croppedDataUrl; if (sendB64.length > 4_800_000) { setErr("Fotoğraf çok büyük."); setLoading(false); return; } }
+      
+      const raw = await callClaude([{ role: "user", content: [{ type: "image", source: { type: "base64", media_type: "image/jpeg", data: sendB64 } }, { type: "text", text: `Identify all educational questions or content in this image. Respond with ONLY a JSON object (no markdown): {"questions":[{"subject":"Physics","topic":"main topic in Turkish","subtopic":"sub topic in Turkish","difficulty":"Kolay or Orta or Zor","question":"full question text in Turkish exactly as written","summary":"brief question summary in Turkish","advice":"study advice in Turkish"}]}` }] }], 1500);
+      const parsed = extractJson(raw);
       const analyses = (parsed.questions || [parsed]).filter((a: any) => a?.topic);
       if (!analyses.length) throw new Error("Soru tespit edilemedi");
       const time = new Date().toLocaleTimeString("tr-TR", { hour: "2-digit", minute: "2-digit" });
