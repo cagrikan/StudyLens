@@ -337,7 +337,8 @@ function QuestionDetail({ q, onClose }: { q: any; onClose: () => void }) {
         </div>
         <div style={{ margin: "12px 16px 0", padding: "14px 16px", background: SURFACE, borderRadius: 16, border: `1px solid ${BORDER}` }}>
           <div style={{ fontSize: 11, fontWeight: 700, color: MUTED, marginBottom: 6, textTransform: "uppercase", letterSpacing: .8 }}>Soru</div>
-          <div style={{ fontSize: 14, color: TEXT, lineHeight: 1.7 }}>{a.summary}</div>
+            <div style={{ fontSize: 14, color: TEXT, lineHeight: 1.7 }}>{a.question || a.summary}</div>
+            <div style={{ fontSize: 12, color: MUTED, marginTop: 8, lineHeight: 1.6 }}>{a.summary}</div>
         </div>
         <div style={{ margin: "10px 16px 0", padding: "14px 16px", background: "rgba(108,99,255,0.1)", borderRadius: 16, borderLeft: `3px solid ${P}` }}>
           <div style={{ fontSize: 11, fontWeight: 700, color: P2, marginBottom: 6, textTransform: "uppercase", letterSpacing: .8 }}>Nasıl Çalışmalısın?</div>
@@ -414,7 +415,7 @@ export default function App() {
       if (compressed) { sendB64 = compressed.b64; thumbnail = compressed.dataUrl; }
       else { sendB64 = srcDataUrl.split(",")[1] || ""; thumbnail = srcDataUrl; if (sendB64.length > 4_800_000) { setErr("Fotoğraf çok büyük."); setLoading(false); return; } }
       const cropNote = cropPct ? `Focus only on region: left ${cropPct.left}% to right ${cropPct.right}%, top ${cropPct.top}% to bottom ${cropPct.bottom}%.` : "";
-      const raw = await callClaude([{ role: "user", content: [{ type: "image", source: { type: "base64", media_type: "image/jpeg", data: sendB64 } }, { type: "text", text: `${cropNote} Identify all educational questions or content in this image. Respond with ONLY a JSON object (no markdown): {"questions":[{"subject":"Physics","topic":"main topic in Turkish","subtopic":"sub topic in Turkish","difficulty":"Kolay or Orta or Zor","summary":"question summary in Turkish","advice":"study advice in Turkish"}]}` }] }], 1500);
+      const raw = await callClaude([{ role: "user", content: [{ type: "image", source: { type: "base64", media_type: "image/jpeg", data: sendB64 } }, { type: "text", text: `${cropNote} Identify all educational questions...{"questions":[{"subject":...,"advice":"study advice in Turkish"}]}`` }] }], 1500);
       const parsed = extractJson(raw);
       const analyses = (parsed.questions || [parsed]).filter((a: any) => a?.topic);
       if (!analyses.length) throw new Error("Soru tespit edilemedi");
