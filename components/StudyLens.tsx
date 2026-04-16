@@ -183,6 +183,7 @@ function AuthScreen({ onAuth }: { onAuth: (u: string) => void }) {
   const [pin2, setPin2] = useState("");
   const [err, setErr] = useState("");
   const [loading, setLoading] = useState(false);
+  const [remember, setRemember] = useState(false);
   const sw = (m: "login" | "register") => { setMode(m); setErr(""); setPin(""); setPin2(""); };
 
   const submit = async () => {
@@ -199,6 +200,7 @@ function AuthScreen({ onAuth }: { onAuth: (u: string) => void }) {
       if (ex) { setErr("Bu kullanıcı adı alınmış"); setLoading(false); return; }
       await sSet(`user:${u}`, JSON.stringify({ username: u, pin, createdAt: Date.now() }));
     }
+    if (remember) localStorage.setItem("sl_user", u);
     onAuth(u); setLoading(false);
   };
 
@@ -237,6 +239,11 @@ function AuthScreen({ onAuth }: { onAuth: (u: string) => void }) {
             <PinBoxes value={pin2} onChange={setPin2} />
           </div>
         )}
+        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 16 }}>
+        <input type="checkbox" id="remember" checked={remember} onChange={e => setRemember(e.target.checked)}
+         style={{ width: 16, height: 16, accentColor: P, cursor: "pointer" }}/>
+        <label htmlFor="remember" style={{ fontSize: 13, color: MUTED, cursor: "pointer" }}>Beni hatırla</label>
+      </div>
         {err && <div style={{ background: "rgba(255,101,132,0.12)", border: "1px solid rgba(255,101,132,0.3)", borderRadius: 12, padding: "11px 14px", marginBottom: 18, color: "#FF8FA5", fontSize: 13, display: "flex", alignItems: "center", gap: 8 }}><span>⚠</span>{err}</div>}
         <button onClick={submit} disabled={loading} style={{ width: "100%", background: loading ? "rgba(255,255,255,0.05)" : `linear-gradient(135deg,${P} 0%,${P2} 100%)`, border: "none", borderRadius: 16, padding: "15px 0", color: loading ? MUTED : "white", fontSize: 15, fontWeight: 700, cursor: loading ? "wait" : "pointer", boxShadow: loading ? "none" : "0 8px 24px rgba(108,99,255,0.35)", transition: "all .2s", letterSpacing: .3 }}>
           {loading ? <Spinner color={P} size={22} /> : mode === "login" ? "Giriş Yap →" : "Hesap Oluştur →"}
@@ -361,6 +368,10 @@ function QuestionDetail({ q, onClose }: { q: any; onClose: () => void }) {
 // ── Ana bileşen ────────────────────────────────────────────────
 export default function App() {
   const [currentUser, setCurrentUser] = useState<string | null>(null);
+  useEffect(() => {
+  const saved = localStorage.getItem("sl_user");
+  if (saved) handleAuth(saved);
+}, []);
   const [dataLoading, setDataLoading] = useState(false);
   const [qs, setQs] = useState<any[]>([]);
   const [tab, setTab] = useState("home");
@@ -403,8 +414,7 @@ export default function App() {
   };
 
   const handleAuth = async (u: string) => { setCurrentUser(u); setQs([]); setReport(null); setTest(null); setTab("home"); await loadUserData(u); };
-  const logout = () => { setCurrentUser(null); setQs([]); setReport(null); setTest(null); setAnswers({}); setSubmitted(false); setTab("home"); };
-  const saveQs = async (u: string, list: any[]) => { await sSet(`qmeta:${u}`, JSON.stringify(list.map(({ url, ...r }) => r))); };
+const logout = () => { localStorage.removeItem("sl_user"); setCurrentUser(null); setQs([]); setReport(null); setTest(null); setAnswers({}); setSubmitted(false); setTab("home"); };   const saveQs = async (u: string, list: any[]) => { await sSet(`qmeta:${u}`, JSON.stringify(list.map(({ url, ...r }) => r))); };
 
   const handleFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]; if (!file) return;
