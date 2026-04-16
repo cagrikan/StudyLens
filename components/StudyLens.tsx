@@ -495,7 +495,7 @@ const analyzeImage = async (cropPct: any) => {
       const updated = [...qs, ...newQs]; setQs(updated);
       if (currentUser) { for (const q of newQs) await sSet(`qimg:${currentUser}:${q.id}`, thumbnail || ""); await saveQs(currentUser, updated); }
       if (updated.length % CYCLE === 0) buildReport(updated.slice(-CYCLE), true);
-    } catch (e: any) { setErr("Hata: " + (e.message || String(e)) + " | RAW: " + raw.slice(0, 300)); }
+} catch (e: any) { setErr("Hata: " + (e.message || String(e))); }
     setLoading(false);
   };
 
